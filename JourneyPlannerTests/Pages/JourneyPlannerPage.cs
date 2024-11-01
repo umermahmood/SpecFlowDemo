@@ -170,7 +170,7 @@ namespace JourneyPlannerTests.Pages
 
         public void ClickViewDetails()
         {
-            Thread.Sleep(3000);
+            Thread.Sleep(4000);
             WaitAndClick(ViewDetailsButton);
         }
 
