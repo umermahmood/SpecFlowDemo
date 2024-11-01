@@ -1,55 +1,49 @@
-﻿using OpenQA.Selenium.Support.UI;
-using OpenQA.Selenium;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
 
 namespace JourneyPlannerTests.Pages
 {
     public class CommonPage
     {
-        public static IWebDriver driver;
-        public static class Timings
+        protected IWebDriver driver;
+        protected WebDriverWait _wait;
+
+        public CommonPage(IWebDriver driver, int waitTimeInSeconds = 10)
         {
-            public const int SECONDS_1 = 1;
-            public const int SECONDS_2 = 2;
-            public const int SECONDS_3 = 3;
-            public const int SECONDS_5 = 5;
-            
+            this.driver = driver;
+            _wait = new WebDriverWait(driver, TimeSpan.FromSeconds(waitTimeInSeconds));
         }
 
-        //public void WaitForLoader(int secondsCount, int maxWaitCount, By Locator)
-        //{
-        //    try
-        //    {
-        //        WebDriverWait waitGIF = new WebDriverWait(driver, TimeSpan.FromSeconds(secondsCount));
-        //        waitGIF.IgnoreExceptionTypes(typeof(NoSuchElementException));
-                
-
-        //        WebDriverWait waitGIFVisible = new WebDriverWait(driver, TimeSpan.FromSeconds(maxWaitCount));
-        //        waitGIFVisible.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.InvisibilityOfElementLocated(Locator));
-        //    }
-        //    catch (WebDriverTimeoutException)
-        //    {
-        //        //   No spinner handled (does not always appear).
-        //        return;
-        //    }
-        //}
-
-        public void SetUpWebDriverWait(int secondsCount, By controlName)
+        public void WaitAndClick(IWebElement element)
         {
-            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(secondsCount));
-            wait.IgnoreExceptionTypes(typeof(ElementNotVisibleException));
-            wait.IgnoreExceptionTypes(typeof(NoSuchElementException));
-            wait.IgnoreExceptionTypes(typeof(ElementClickInterceptedException));
-            wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
-            wait.IgnoreExceptionTypes(typeof(WebDriverException));
-            wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementExists(controlName));
-            wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(controlName));
-            wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(controlName));
-            wait.Until(x => x.FindElement(controlName));
+            _wait.Until(ExpectedConditions.ElementToBeClickable(element)).Click();
+        }
+
+        public void WaitUntilVisible(By locator)
+        {
+            _wait.Until(ExpectedConditions.ElementIsVisible(locator));
+        }
+
+        // Helper method to scroll to an element and click it using JavaScript
+        public void ScrollAndClick(IWebElement element)
+        {
+            try
+            {
+                // Attempt to scroll into view and wait for the element to be clickable
+                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", element);
+                _wait.Until(ExpectedConditions.ElementToBeClickable(element)).Click();
+            }
+            catch (ElementClickInterceptedException)
+            {
+                // Retry by scrolling a bit more and clicking again if an overlay intercepts the click
+                ((IJavaScriptExecutor)driver).ExecuteScript("window.scrollBy(0, -100);"); // Adjust the offset as needed
+                _wait.Until(ExpectedConditions.ElementToBeClickable(element)).Click();
+            }
+            catch (WebDriverTimeoutException)
+            {
+                throw new Exception("Failed to scroll and click the element within the specified time.");
+            }
         }
     }
 }
