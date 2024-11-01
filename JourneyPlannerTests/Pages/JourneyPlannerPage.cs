@@ -1,45 +1,25 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using SeleniumExtras.WaitHelpers;
-using System;
-using System.ComponentModel;
 
 namespace JourneyPlannerTests.Pages
 {
-    public class JourneyPlannerPage
+    public class JourneyPlannerPage : CommonPage
     {
-        private readonly IWebDriver _driver;
-        private readonly WebDriverWait _wait;
-
-        public JourneyPlannerPage(IWebDriver driver)
-        {
-            _driver = driver;
-            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
-        }
+ 
+        public JourneyPlannerPage(IWebDriver driver) : base(driver) { }
 
         // Element locators
-        private IWebElement FromInputClick => _driver.FindElement(By.XPath("//input[@class='jpFrom tt-input']"));
-        private IWebElement ToInputClick => _driver.FindElement(By.XPath("//input[@class='jpTo tt-input']"));
-        private IWebElement PlanJourneyButton => _driver.FindElement(By.Id("plan-journey-button"));
-        private IWebElement EditPreferencesButton => _driver.FindElement(By.XPath("//button[@class='toggle-options more-options']"));
-        private IWebElement LeastWalkingOption => _driver.FindElement(By.XPath("//input[@id='JourneyPreference_2']"));
-        private IWebElement UpdateJourneyButton => _driver.FindElement(By.XPath("//div[@id='more-journey-options']//input[@class='primary-button plan-journey-button']"));
-        private IWebElement ViewDetailsButton => _driver.FindElement(By.XPath("//div[@id='option-1-content']//button[contains(text(),'View details')]"));
-        private IWebElement acceptCookiesButton => _driver.FindElement(By.XPath("//button[@id='CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll']"));
-        private IWebElement inputFromDropdown => _driver.FindElement(By.Id("InputFrom-dropdown"));
-        private IWebElement AcceptCookiesButton => _driver.FindElement(By.Id("CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"));
-
-
-        private void WaitAndClick(IWebElement element)
-        {
-            _wait.Until(ExpectedConditions.ElementToBeClickable(element)).Click();
-        }
-
-        private void WaitUntilVisible(By locator)
-        {
-            _wait.Until(ExpectedConditions.ElementIsVisible(locator)).Click();
-        }
+        private IWebElement FromInputClick => driver.FindElement(By.XPath("//input[@class='jpFrom tt-input']"));
+        private IWebElement ToInputClick => driver.FindElement(By.XPath("//input[@class='jpTo tt-input']"));
+        private IWebElement PlanJourneyButton => driver.FindElement(By.Id("plan-journey-button"));
+        private IWebElement EditPreferencesButton => driver.FindElement(By.XPath("//button[@class='toggle-options more-options']"));
+        private IWebElement LeastWalkingOption => driver.FindElement(By.XPath("//input[@id='JourneyPreference_2']"));
+        private IWebElement UpdateJourneyButton => driver.FindElement(By.XPath("//div[@id='more-journey-options']//input[@class='primary-button plan-journey-button']"));
+        private IWebElement ViewDetailsButton => driver.FindElement(By.XPath("//div[@id='option-1-content']//button[contains(text(),'View details')]"));
+        private IWebElement acceptCookiesButton => driver.FindElement(By.XPath("//button[@id='CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll']"));
+        private IWebElement inputFromDropdown => driver.FindElement(By.Id("InputFrom-dropdown"));
+        private IWebElement AcceptCookiesButton => driver.FindElement(By.Id("CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"));
 
         public void AcceptCookies()
         {
@@ -48,6 +28,7 @@ namespace JourneyPlannerTests.Pages
                 if (AcceptCookiesButton.Displayed)
                 {
                     WaitAndClick(AcceptCookiesButton);
+                    Thread.Sleep(2000);
                 }
             }
             catch (WebDriverTimeoutException)
@@ -63,7 +44,7 @@ namespace JourneyPlannerTests.Pages
             _wait.Until(ExpectedConditions.ElementIsVisible(By.Id("InputFrom-dropdown"))); // Wait for suggestions
 
             // Select the matched suggestion 
-            var suggestions = _driver.FindElements(By.ClassName("tt-suggestion")); 
+            var suggestions = driver.FindElements(By.ClassName("tt-suggestion")); 
             bool foundMatch = false;
             foreach (IWebElement suggestion in suggestions)
             {
@@ -87,7 +68,7 @@ namespace JourneyPlannerTests.Pages
                 _wait.Until(ExpectedConditions.ElementIsVisible(By.Id("InputTo-dropdown"))); // Wait for suggestions
 
                 // Select the matched suggestion 
-                var suggestions = _driver.FindElements(By.ClassName("tt-suggestions")); 
+                var suggestions = driver.FindElements(By.ClassName("tt-suggestions")); 
                 if (suggestions.Count > 0)
                 {
                     bool foundMatch = false;
@@ -119,7 +100,7 @@ namespace JourneyPlannerTests.Pages
             // Validate the walking time
             try
             {
-                var walkingJourneyBox = _driver.FindElement(By.CssSelector("a.journey-box.walking"));
+                var walkingJourneyBox = driver.FindElement(By.CssSelector("a.journey-box.walking"));
                 var walkingTimeElement = walkingJourneyBox.FindElement(By.CssSelector(".col2.journey-info strong"));
                 string walkingTimeText = walkingTimeElement.Text;
 
@@ -134,7 +115,7 @@ namespace JourneyPlannerTests.Pages
             // Validate the cycling time
             try
             {
-                var cyclingJourneyBox = _driver.FindElement(By.CssSelector("a.journey-box.cycling"));
+                var cyclingJourneyBox = driver.FindElement(By.CssSelector("a.journey-box.cycling"));
                 var cyclingTimeElement = cyclingJourneyBox.FindElement(By.CssSelector(".col2.journey-info strong"));
                 string cyclingTimeText = cyclingTimeElement.Text;
 
@@ -146,6 +127,7 @@ namespace JourneyPlannerTests.Pages
                 throw new Exception("Cycling journey time is not displayed.");
             }
         }
+
         public void PlanJourney()
         {
             WaitAndClick(PlanJourneyButton);
@@ -153,29 +135,24 @@ namespace JourneyPlannerTests.Pages
 
         public void JourneyTimeValidation()
         {
-            Thread.Sleep(7000);
-            // Locate the journey time element using the class name
-            var journeyTimeElement = _driver.FindElement(By.CssSelector(".journey-time.no-map"));
-
+            // Wait for the journey time element to be visible
+            var journeyTimeElement = _wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.CssSelector(".journey-time.no-map")));
 
             // Extract the inner text of the journey time element
-            var journeyTimeText = journeyTimeElement.Text.Trim(); // e.g., "10 mins"
+            var journeyTimeText = journeyTimeElement.Text.Trim(); 
 
-            if (journeyTimeText.Contains("mins"))
-            {
-                // If "mins" is found, pass the test
-                Console.WriteLine("Journey time is valid and contains 'mins'. Test passed.");
-            }
-            else
-            {
-                // If "mins" is not found, fail the test
-                Assert.Fail($"Expected journey time to contain 'mins', but found: '{journeyTimeText}'.");
-            }
+            // Check if the journey time text contains "mins"
+            Assert.IsTrue(journeyTimeText.Contains("mins"), $"Expected journey time to contain 'mins', but found: '{journeyTimeText}'.");
+
+            // If the check passes, log a success message
+            Console.WriteLine("Journey time is valid and contains 'mins'. Test passed.");
         }
+
+
         public void SelectEditPreferences()
         {
             // Scroll to and click the Edit Preferences button
-            Thread.Sleep(2000);
+            Thread.Sleep(3000);
             ScrollAndClick(EditPreferencesButton);
             
             // Wait until the "Routes with least walking" label is visible, then click it
@@ -191,35 +168,9 @@ namespace JourneyPlannerTests.Pages
             Console.WriteLine("The 'Routes with least walking' option is selected and journey preferences are updated.");
         }
 
-        // Helper method to scroll to an element and click it using JavaScript
-        private void ScrollAndClick(IWebElement element)
-        {
-            try
-            {
-                // Attempt to scroll into view and wait for the element to be clickable
-                ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", element);
-                _wait.Until(ExpectedConditions.ElementToBeClickable(element)).Click();
-            }
-            catch (ElementClickInterceptedException)
-            {
-                // Retry by scrolling a bit more and clicking again if an overlay intercepts the click
-                ((IJavaScriptExecutor)_driver).ExecuteScript("window.scrollBy(0, -100);"); // Adjust the offset as needed
-                _wait.Until(ExpectedConditions.ElementToBeClickable(element)).Click();
-            }
-            catch (WebDriverTimeoutException)
-            {
-                throw new Exception("Failed to scroll and click the element within the specified time.");
-            }
-        }
-        // Helper method to scroll to an element and click it using JavaScript
-        private void Scroll(IWebElement element)
-        {
-            ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView(true);", element);
-        }
-
         public void ClickViewDetails()
         {
-            Thread.Sleep(3000);
+            Thread.Sleep(4000);
             WaitAndClick(ViewDetailsButton);
         }
 

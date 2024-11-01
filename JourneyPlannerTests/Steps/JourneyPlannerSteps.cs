@@ -1,8 +1,6 @@
 ﻿using JourneyPlannerTests.Pages;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using SeleniumExtras.WaitHelpers;
 using TechTalk.SpecFlow;
 
 namespace JourneyPlannerTests.Steps
@@ -52,7 +50,7 @@ namespace JourneyPlannerTests.Steps
         [When(@"the user selects ""(.*)"" in preferences")]
         public void WhenTheUserSelectsInPreferences(string preference)
         {
-                _journeyPlannerPage.SelectEditPreferences();
+            _journeyPlannerPage.SelectEditPreferences();
         }
 
         [Then(@"the journey time should be '([^']*)' minutes")]
@@ -61,12 +59,10 @@ namespace JourneyPlannerTests.Steps
             _journeyPlannerPage.JourneyTimeValidation();
         }
 
-        
         [When(@"the user clicks on ""(.*)""")]
         public void WhenTheUserClicksOn(string button)
         {
-             _journeyPlannerPage.ClickViewDetails();
-        
+            _journeyPlannerPage.ClickViewDetails();
         }
 
         [Then(@"complete access information for ""(.*)"" should be displayed")]
@@ -84,7 +80,7 @@ namespace JourneyPlannerTests.Steps
         [Then(@"the widget should display an error or prevent the journey planning")]
         public void ThenTheWidgetShouldDisplayAnError()
         {
-             _journeyPlannerPage.GetErrorMessage();
+            _journeyPlannerPage.GetErrorMessage();
            
         }
 
